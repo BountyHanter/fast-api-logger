@@ -1,8 +1,8 @@
-# Logger v2 — пользовательская документация
+# Fast Api Logger — пользовательская документация
 
 ## Что это
 
-**Logger v2** — универсальный логгер для Python / FastAPI проектов, который:
+**Fast Api Logger** — универсальный логгер для Python / FastAPI проектов, который:
 
 * можно **скопировать и использовать без правок кода**,
 * настраивается **только через env**,
@@ -20,7 +20,7 @@
 ### 1️⃣ Подключение
 
 ```python
-from app.loggerV2 import log
+from fast_api_logger import log
 
 log.info("Service started")
 ```
@@ -83,7 +83,7 @@ log.info("User created")
 ### Основные функции
 
 ```python
-from app.context import (
+from fast_api_logger.context import (
   set_context,
   remove_context,
   clear_context,
@@ -191,7 +191,7 @@ log.info("User created", extra={"user_id": 42})
 
 ### Решение
 
-Logger v2 разделяет:
+Fast Api Logger разделяет:
 
 * **политику** (через env),
 * **текущее состояние выполнения** (через код).
@@ -217,7 +217,7 @@ STREAM_SAFE=true
 Функции из `context.py`:
 
 ```python
-from app.context import set_streaming
+from fast_api_logger.context import set_streaming
 ```
 
 Используются, чтобы **сообщить логгеру**, что:
@@ -331,7 +331,7 @@ async def context_middleware(request: Request, call_next):
 
 ## Логи uvicorn (FastAPI / Uvicorn)
 
-Logger v2 **не настраивает логи uvicorn автоматически**.
+Fast Api Logger **не настраивает логи uvicorn автоматически**.
 
 Это сделано осознанно, чтобы:
 
@@ -354,13 +354,13 @@ Logger v2 **не настраивает логи uvicorn автоматичес�
 Создай (или используй) модуль интеграции, например:
 
 ```
-app/logger/uvicorn.py
+fast_api_logger/uvicorn.py
 ```
 
 Инициализируй его **один раз при старте приложения**, например в `main.py`:
 
 ```python
-from app.loggerV2.uvicorn import configure_uvicorn_logging
+from fast_api_logger.uvicorn import configure_uvicorn_logging
 
 configure_uvicorn_logging(
     error_log_path="logs/uvicorn_error.log",
@@ -378,7 +378,7 @@ configure_uvicorn_logging(
 
 ### Важно
 
-* Logger v2 **не требует** настройки uvicorn-логов — это опционально.
+* Fast Api Logger **не требует** настройки uvicorn-логов — это опционально.
 * Если разделение логов не нужно, этот шаг можно пропустить.
 * Настройка uvicorn-логов **не влияет** на `STREAM_SAFE` и контекст логирования.
 

@@ -4,7 +4,7 @@ import json
 import logging
 from typing import Any
 
-from app.loggerV2.context import get_context
+from .context import get_context
 
 
 def _safe_json_value(obj: Any) -> Any:

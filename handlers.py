@@ -6,7 +6,7 @@ import sys
 from logging.handlers import TimedRotatingFileHandler
 
 from .config import LogConfig
-from app.loggerV2.context import is_streaming
+from .context import is_streaming
 from .formatters import TextFormatter, JsonFormatter
 
 
