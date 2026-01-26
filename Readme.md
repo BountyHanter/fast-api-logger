@@ -17,7 +17,7 @@
 
 ## Быстрый старт
 
-### 1️⃣ Подключение
+### Подключение
 
 ```python
 from fast_api_logger import log
