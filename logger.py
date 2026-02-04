@@ -7,7 +7,7 @@ from .handlers import build_handlers
 # стандартные ключи record'а — чтобы не конфликтовать
 _STANDARD_KEYS = set(logging.LogRecord(
     name="", level=0, pathname="", lineno=0, msg="", args=(), exc_info=None
-).__dict__.keys())
+).__dict__.keys()) | {"message", "asctime", "exc_info", "stack_info"}
 
 
 class SafeLogger:
