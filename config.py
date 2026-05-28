@@ -1,6 +1,54 @@
 import os
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Literal
+
+from dotenv import find_dotenv, load_dotenv
+
+
+_ENV_LOADED = False
+_LOADED_ENV_PATH: str | None = None
+
+
+def load_env_file() -> str | None:
+    """
+    Аккуратно подгружает .env один раз.
+
+    Приоритет:
+    1. LOG_ENV_FILE=/path/to/.env
+    2. ближайший .env от текущей рабочей директории вверх
+    3. ничего не грузим, если .env не найден
+
+    override=False — реальные переменные окружения важнее .env.
+    """
+    global _ENV_LOADED, _LOADED_ENV_PATH
+
+    if _ENV_LOADED:
+        return _LOADED_ENV_PATH
+
+    explicit_env_file = os.getenv("LOG_ENV_FILE")
+
+    if explicit_env_file:
+        env_path = Path(explicit_env_file).expanduser().resolve()
+
+        if env_path.exists():
+            load_dotenv(env_path, override=False)
+            _LOADED_ENV_PATH = str(env_path)
+
+        _ENV_LOADED = True
+        return _LOADED_ENV_PATH
+
+    found_env = find_dotenv(
+        filename=".env",
+        usecwd=True,
+    )
+
+    if found_env:
+        load_dotenv(found_env, override=False)
+        _LOADED_ENV_PATH = found_env
+
+    _ENV_LOADED = True
+    return _LOADED_ENV_PATH
 
 
 def _parse_bool(val: str | None, default: bool = False) -> bool:
@@ -16,41 +64,38 @@ def _get_env(name: str, default: str) -> str:
 
 @dataclass(frozen=True)
 class LogConfig:
-    # базовое
     level: str
     logger_name: str
 
-    # консоль
     console_enabled: bool
     console_format: Literal["text", "json"]
 
-    # файлы
     text_file_enabled: bool
     text_file_path: str
 
     json_file_enabled: bool
     json_file_path: str
 
-    # ротация
-    rotation_when: str       # "midnight", "H", "D", "M", ...
+    rotation_when: str
     rotation_interval: int
     rotation_backup_count: int
     rotation_utc: bool
 
-    # поведение
     sanitize_extra: bool
-    stream_safe: bool         # если true — можем не писать в stdout во время стрима
-    stream_debug: bool        # логировать чанки стрима (лучше false по умолчанию)
+    stream_safe: bool
+    stream_debug: bool
 
-    # формат
     datefmt: str
     text_fmt: str
 
-    # json keys
     json_ts_key: str
+
+    env_file_path: str | None = None
 
 
 def load_config() -> LogConfig:
+    env_file_path = load_env_file()
+
     level = _get_env("LOG_LEVEL", "INFO").upper()
     if level not in {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}:
         level = "INFO"
@@ -81,7 +126,7 @@ def load_config() -> LogConfig:
 
     text_fmt = _get_env(
         "LOG_TEXT_FMT",
-        "[%(asctime)s] [%(levelname)s] %(message)s"
+        "[%(asctime)s] [%(levelname)s] %(message)s",
     )
 
     json_ts_key = _get_env("LOG_JSON_TS_KEY", "ts")
@@ -105,4 +150,5 @@ def load_config() -> LogConfig:
         datefmt=datefmt,
         text_fmt=text_fmt,
         json_ts_key=json_ts_key,
+        env_file_path=env_file_path,
     )
